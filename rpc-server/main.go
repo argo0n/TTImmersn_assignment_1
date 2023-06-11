@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 
 	rpc "github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server/kitex_gen/rpc/imservice"
@@ -10,6 +11,15 @@ import (
 )
 
 func main() {
+	// Starts a database connection
+	db, err := sql.Open("mysql", "admin:p@ssw0rd@tcp(localhost:3306)/tiktok_chat")
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	} else {
+		log.Println("Database connection successful")
+	}
+	defer db.Close()
+
 	r, err := etcd.NewEtcdRegistry([]string{"etcd:2379"}) // r should not be reused.
 	if err != nil {
 		log.Fatal(err)
