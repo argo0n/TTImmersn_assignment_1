@@ -24,3 +24,18 @@ services:
     command: ["etcd", "--advertise-client-urls", "http://etcd:2379", "--listen-client-urls", "http://0.0.0.0:2379"]
     ports:
       - "2379:2379"
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: p@ssw0rd
+      MYSQL_DATABASE: tiktok_chat
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: p@ssw0rd
+    ports:
+      - 3306:3306
+volumes:
+  db_data: {}
