@@ -5,9 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/TikTokTechImmersion/assignment_demo_2023/http-server/kitex_gen/rpc"
-	"github.com/TikTokTechImmersion/assignment_demo_2023/http-server/kitex_gen/rpc/imservice"
-	"github.com/TikTokTechImmersion/assignment_demo_2023/http-server/proto_gen/api"
+	"github.com/argo0n/TTImmersn_assignment_1/http-server/kitex_gen/rpc"
+	"github.com/argo0n/TTImmersn_assignment_1/http-server/kitex_gen/rpc/imservice"
+	"github.com/argo0n/TTImmersn_assignment_1/http-server/proto_gen/api"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/utils"
@@ -32,7 +32,7 @@ func main() {
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 
 	h.GET("/ping", func(c context.Context, ctx *app.RequestContext) {
-		ctx.JSON(consts.StatusOK, utils.H{"message": "pong"})
+		ctx.JSON(consts.StatusOK, utils.H{"message": "pong2"})
 	})
 
 	h.POST("/api/send", sendMessage)
@@ -50,9 +50,10 @@ func sendMessage(ctx context.Context, c *app.RequestContext) {
 	}
 	resp, err := cli.Send(ctx, &rpc.SendRequest{
 		Message: &rpc.Message{
-			Chat:   req.Chat,
-			Text:   req.Text,
-			Sender: req.Sender,
+			Chat:     req.Chat,
+			Text:     req.Text,
+			Sender:   req.Sender,
+			SendTime: time.Now().Unix(),
 		},
 	})
 	if err != nil {
