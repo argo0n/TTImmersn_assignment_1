@@ -2,6 +2,7 @@
 namespace go rpc
 
 struct Message {
+    1: i64 Id
     1: string Chat   // format "<member1>:<member2>", e.g. "john:doe"
     2: string Text   // message text content
     3: string Sender // sender identifier
