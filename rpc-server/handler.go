@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/argo0n/TTImmersn_assignment_1/rpc-server/db"
 	"github.com/argo0n/TTImmersn_assignment_1/rpc-server/kitex_gen/rpc"
-	"math/rand"
 )
 
 // IMServiceImpl implements the last service interface defined in the IDL.
@@ -18,12 +17,12 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 	if connErr != nil {
 		resp.Code, resp.Msg = 500, "Couldn't connect to database"
-		return resp, conn
+		return resp, connErr
 	}
 
 	_, err := database.ExecInsert(
 		"INSERT INTO messages(chat, sender, text, send_time) VALUES(?, ?, ?, ?)",
-		req.Message.Chat, req.Message.Text, req.Message.Sender, req.Message.SendTime,
+		req.Message.Chat, req.Message.Sender, req.Message.Text, req.Message.SendTime,
 	)
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Failed to add message to database"
@@ -36,6 +35,7 @@ func (s *IMServiceImpl) Send(ctx context.Context, req *rpc.SendRequest) (*rpc.Se
 
 func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.PullResponse, error) {
 	resp := rpc.NewPullResponse()
+	println("Requested pull")
 
 	if connErr != nil {
 		resp.Code, resp.Msg = 500, "Couldn't connect to database"
@@ -53,8 +53,8 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		order = "DESC"
 	}
 
-	query := fmt.Sprintf("SELECT chat, text, sender, datetime FROM messages WHERE id > ? ORDER BY id %s LIMIT ?", order)
-	rows, err := database.ExecSelectMany(query, cursor, limit)
+	query := fmt.Sprintf("SELECT id, chat, text, sender, send_time AS sendtime FROM messages WHERE id > ? ORDER BY id %s LIMIT ?", order)
+	rows, err := database.ExecSelectMany(query, cursor, limit+1)
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Couldn't execute database query"
 		return resp, err
@@ -70,23 +70,17 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		}
 		messages = append(messages, &msg)
 	}
-	if len(messages) > limit {
-		resp.HasMore = true
-		resp.NextCursor = messages[limit].SendTime // Set next_cursor as send_time of last fetched message
-		messages = messages[:limit]                // Exclude last message from results returned to client
+	if len(messages) > int(limit) {
+		hasMore := true
+		resp.HasMore = &hasMore
+		nextCursor := cursor + int64(limit)
+		resp.NextCursor = &nextCursor
+		messages = messages[:int(limit)] // Exclude last message from results returned to client
 	} else {
-		resp.HasMore = false
+		hasMore := false
+		resp.HasMore = &hasMore
 	}
 
-	resp.Messages = messages
-	resp.Code, resp.Msg = areYouLucky()
+	resp.Messages, resp.Code, resp.Msg = messages, 0, "Success"
 	return resp, nil
-}
-
-func areYouLucky() (int32, string) {
-	if rand.Int31n(2) == 1 {
-		return 0, "success"
-	} else {
-		return 500, "oops"
-	}
 }
