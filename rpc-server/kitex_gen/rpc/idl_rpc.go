@@ -10,10 +10,11 @@ import (
 )
 
 type Message struct {
-	Chat     string `thrift:"Chat,1" frugal:"1,default,string" json:"Chat"`
-	Text     string `thrift:"Text,2" frugal:"2,default,string" json:"Text"`
-	Sender   string `thrift:"Sender,3" frugal:"3,default,string" json:"Sender"`
-	SendTime int64  `thrift:"SendTime,4" frugal:"4,default,i64" json:"SendTime"`
+	Id       int64  `thrift:"Id,1" frugal:"1,default,i64" json:"Id"`
+	Chat     string `thrift:"Chat,2" frugal:"2,default,string" json:"Chat"`
+	Text     string `thrift:"Text,3" frugal:"3,default,string" json:"Text"`
+	Sender   string `thrift:"Sender,4" frugal:"4,default,string" json:"Sender"`
+	SendTime int64  `thrift:"SendTime,5" frugal:"5,default,i64" json:"SendTime"`
 }
 
 func NewMessage() *Message {
@@ -22,6 +23,10 @@ func NewMessage() *Message {
 
 func (p *Message) InitDefault() {
 	*p = Message{}
+}
+
+func (p *Message) GetId() (v int64) {
+	return p.Id
 }
 
 func (p *Message) GetChat() (v string) {
@@ -39,6 +44,9 @@ func (p *Message) GetSender() (v string) {
 func (p *Message) GetSendTime() (v int64) {
 	return p.SendTime
 }
+func (p *Message) SetId(val int64) {
+	p.Id = val
+}
 func (p *Message) SetChat(val string) {
 	p.Chat = val
 }
@@ -53,10 +61,11 @@ func (p *Message) SetSendTime(val int64) {
 }
 
 var fieldIDToName_Message = map[int16]string{
-	1: "Chat",
-	2: "Text",
-	3: "Sender",
-	4: "SendTime",
+	1: "Id",
+	2: "Chat",
+	3: "Text",
+	4: "Sender",
+	5: "SendTime",
 }
 
 func (p *Message) Read(iprot thrift.TProtocol) (err error) {
@@ -79,7 +88,7 @@ func (p *Message) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -109,8 +118,18 @@ func (p *Message) Read(iprot thrift.TProtocol) (err error) {
 				}
 			}
 		case 4:
-			if fieldTypeId == thrift.I64 {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				if err = iprot.Skip(fieldTypeId); err != nil {
+					goto SkipFieldError
+				}
+			}
+		case 5:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else {
@@ -149,10 +168,10 @@ ReadStructEndError:
 }
 
 func (p *Message) ReadField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		p.Chat = v
+		p.Id = v
 	}
 	return nil
 }
@@ -161,7 +180,7 @@ func (p *Message) ReadField2(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		p.Text = v
+		p.Chat = v
 	}
 	return nil
 }
@@ -170,12 +189,21 @@ func (p *Message) ReadField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return err
 	} else {
-		p.Sender = v
+		p.Text = v
 	}
 	return nil
 }
 
 func (p *Message) ReadField4(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		p.Sender = v
+	}
+	return nil
+}
+
+func (p *Message) ReadField5(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
@@ -206,6 +234,10 @@ func (p *Message) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 4
 			goto WriteFieldError
 		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
 
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
@@ -226,10 +258,10 @@ WriteStructEndError:
 }
 
 func (p *Message) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Chat", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("Id", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Chat); err != nil {
+	if err := oprot.WriteI64(p.Id); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -243,10 +275,10 @@ WriteFieldEndError:
 }
 
 func (p *Message) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Text", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("Chat", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Text); err != nil {
+	if err := oprot.WriteString(p.Chat); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -260,10 +292,10 @@ WriteFieldEndError:
 }
 
 func (p *Message) writeField3(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Sender", thrift.STRING, 3); err != nil {
+	if err = oprot.WriteFieldBegin("Text", thrift.STRING, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Sender); err != nil {
+	if err := oprot.WriteString(p.Text); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -277,10 +309,10 @@ WriteFieldEndError:
 }
 
 func (p *Message) writeField4(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("SendTime", thrift.I64, 4); err != nil {
+	if err = oprot.WriteFieldBegin("Sender", thrift.STRING, 4); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI64(p.SendTime); err != nil {
+	if err := oprot.WriteString(p.Sender); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -291,6 +323,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *Message) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("SendTime", thrift.I64, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.SendTime); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *Message) String() string {
@@ -306,43 +355,53 @@ func (p *Message) DeepEqual(ano *Message) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Chat) {
+	if !p.Field1DeepEqual(ano.Id) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.Text) {
+	if !p.Field2DeepEqual(ano.Chat) {
 		return false
 	}
-	if !p.Field3DeepEqual(ano.Sender) {
+	if !p.Field3DeepEqual(ano.Text) {
 		return false
 	}
-	if !p.Field4DeepEqual(ano.SendTime) {
+	if !p.Field4DeepEqual(ano.Sender) {
+		return false
+	}
+	if !p.Field5DeepEqual(ano.SendTime) {
 		return false
 	}
 	return true
 }
 
-func (p *Message) Field1DeepEqual(src string) bool {
+func (p *Message) Field1DeepEqual(src int64) bool {
 
-	if strings.Compare(p.Chat, src) != 0 {
+	if p.Id != src {
 		return false
 	}
 	return true
 }
 func (p *Message) Field2DeepEqual(src string) bool {
 
-	if strings.Compare(p.Text, src) != 0 {
+	if strings.Compare(p.Chat, src) != 0 {
 		return false
 	}
 	return true
 }
 func (p *Message) Field3DeepEqual(src string) bool {
 
+	if strings.Compare(p.Text, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *Message) Field4DeepEqual(src string) bool {
+
 	if strings.Compare(p.Sender, src) != 0 {
 		return false
 	}
 	return true
 }
-func (p *Message) Field4DeepEqual(src int64) bool {
+func (p *Message) Field5DeepEqual(src int64) bool {
 
 	if p.SendTime != src {
 		return false

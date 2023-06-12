@@ -3,7 +3,7 @@
 package imservice
 
 import (
-	rpc "github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server/kitex_gen/rpc"
+	rpc "github.com/argo0n/TTImmersn_assignment_1/rpc-server/kitex_gen/rpc"
 	server "github.com/cloudwego/kitex/server"
 )
 
