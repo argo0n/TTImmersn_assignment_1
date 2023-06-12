@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 type DB struct {
@@ -14,6 +15,9 @@ type DB struct {
 func CreateDB(dbHost, dbName, dbUsername, dbPassword string) (*DB, error) {
 	database_url := fmt.Sprintf("%s:%s@tcp(%s)/%s", dbUsername, dbPassword, dbHost, dbName)
 	conn, err := sql.Open("mysql", database_url)
+	conn.SetMaxIdleConns(64)
+	conn.SetMaxOpenConns(64)
+	conn.SetConnMaxLifetime(time.Minute)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +33,7 @@ func (db *DB) Close() error {
 func (db *DB) ExecInsert(q string, args ...interface{}) (int64, error) {
 	result, err := db.conn.Exec(q, args...)
 	if err != nil {
-		// Error encountered
+		panic("the END")
 		return 0, err
 	}
 	return result.LastInsertId()
