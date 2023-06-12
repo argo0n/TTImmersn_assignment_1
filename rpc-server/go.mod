@@ -1,10 +1,11 @@
-module github.com/TikTokTechImmersion/assignment_demo_2023/rpc-server
+module github.com/argo0n/TTImmersn_assignment_1/rpc-server
 
 go 1.18
 
 require (
 	github.com/apache/thrift v0.13.0
 	github.com/cloudwego/kitex v0.5.2
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/kitex-contrib/registry-etcd v0.1.0
 	github.com/stretchr/testify v1.8.2
 )
