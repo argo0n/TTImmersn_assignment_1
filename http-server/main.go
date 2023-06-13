@@ -28,7 +28,6 @@ func main() {
 		client.WithRPCTimeout(1*time.Second),
 		client.WithHostPorts("rpc-server:8888"),
 	)
-
 	h := server.Default(server.WithHostPorts("0.0.0.0:8080"))
 
 	h.GET("/ping", func(c context.Context, ctx *app.RequestContext) {
@@ -46,6 +45,11 @@ func sendMessage(ctx context.Context, c *app.RequestContext) {
 	err := c.Bind(&req)
 	if err != nil {
 		c.String(consts.StatusBadRequest, "Failed to parse request body: %v", err)
+		return
+	}
+
+	if req.Chat == "" || req.Text == "" || req.Sender == "" {
+		c.String(consts.StatusBadRequest, "Missing required fields in request body")
 		return
 	}
 	resp, err := cli.Send(ctx, &rpc.SendRequest{
@@ -73,6 +77,16 @@ func pullMessage(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	if req.Chat == "" {
+		c.String(consts.StatusBadRequest, "Chat field is required")
+		return
+	}
+
+	// Set default values for optional fields
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+
 	resp, err := cli.Pull(ctx, &rpc.PullRequest{
 		Chat:    req.Chat,
 		Cursor:  req.Cursor,
@@ -82,6 +96,8 @@ func pullMessage(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
+	} else if resp.Code == 400 {
+		c.String(consts.StatusBadRequest, resp.Msg)
 	} else if resp.Code != 0 {
 		c.String(consts.StatusInternalServerError, resp.Msg)
 		return
