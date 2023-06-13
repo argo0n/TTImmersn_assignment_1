@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/argo0n/TTImmersn_assignment_1/rpc-server/db"
 	"github.com/argo0n/TTImmersn_assignment_1/rpc-server/kitex_gen/rpc"
 )
@@ -48,12 +47,12 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 		return resp, nil
 	}
 
-	order := "ASC"
+	query := ""
 	if *reverse {
-		order = "DESC"
+		query = "SELECT id, chat, text, sender, send_time AS sendtime FROM messages WHERE id < ? ORDER BY id DESC LIMIT ?"
+	} else {
+		query = "SELECT id, chat, text, sender, send_time AS sendtime FROM messages WHERE id > ? ORDER BY id LIMIT ?"
 	}
-
-	query := fmt.Sprintf("SELECT id, chat, text, sender, send_time AS sendtime FROM messages WHERE id > ? ORDER BY id %s LIMIT ?", order)
 	rows, err := database.ExecSelectMany(query, cursor, limit+1)
 	if err != nil {
 		resp.Code, resp.Msg = 500, "Couldn't execute database query"
@@ -73,14 +72,22 @@ func (s *IMServiceImpl) Pull(ctx context.Context, req *rpc.PullRequest) (*rpc.Pu
 	if len(messages) > int(limit) {
 		hasMore := true
 		resp.HasMore = &hasMore
-		nextCursor := cursor + int64(limit)
-		resp.NextCursor = &nextCursor
+		if *reverse {
+			nextCursor := cursor - int64(limit)
+			if nextCursor < 0 {
+				nextCursor = 0
+			}
+			resp.NextCursor = &nextCursor
+		} else {
+			nextCursor := cursor + int64(limit)
+			resp.NextCursor = &nextCursor
+		}
+
 		messages = messages[:int(limit)] // Exclude last message from results returned to client
 	} else {
 		hasMore := false
 		resp.HasMore = &hasMore
 	}
-
 	resp.Messages, resp.Code, resp.Msg = messages, 0, "Success"
 	return resp, nil
 }
