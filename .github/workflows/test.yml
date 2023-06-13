@@ -43,7 +43,7 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          docker-compose -f docker-compose.yml up -d db
+          docker-compose -f ../docker-compose.yml up -d db
           sleep 10  # Wait for the DB to come up
 
       - name: Set up Go
