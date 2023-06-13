@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/argo0n/TTImmersn_assignment_1/http-server/kitex_gen/rpc"
@@ -17,6 +19,14 @@ import (
 )
 
 var cli imservice.Client
+
+func validateChatFormat(chat string) error {
+	chatParts := strings.Split(chat, ":")
+	if len(chatParts) != 2 || chatParts[0] == "" || chatParts[1] == "" {
+		return fmt.Errorf("Chat field must be in format 'string:string'")
+	}
+	return nil
+}
 
 func main() {
 	r, err := etcd.NewEtcdResolver([]string{"etcd:2379"})
@@ -52,6 +62,13 @@ func sendMessage(ctx context.Context, c *app.RequestContext) {
 		c.String(consts.StatusBadRequest, "Missing required fields in request body")
 		return
 	}
+
+	err = validateChatFormat(req.Chat)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
 	resp, err := cli.Send(ctx, &rpc.SendRequest{
 		Message: &rpc.Message{
 			Chat:     req.Chat,
